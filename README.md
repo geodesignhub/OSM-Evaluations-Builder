@@ -1,7 +1,7 @@
-# Geodesignhub Openstreetmap Evaluation Maps Builder
+# Geodesignhub OSM Evaluation Maps Builder
 This program uses Openstreetmap data from [Trimble Marketplace](https://market.trimbledata.com/) to develop Evaluation maps for [Geodesignhub](https://www.geodesignhub.com/). It uses simple rules to parse the existing data and build evaluation maps that can be used directly on Geodesignhub.
 
-Making evaluation maps is the most time consuming part of a Geodesign study.  Using this script it can be automated. The following evaluation maps are generated: 
+Making evaluation maps is the most time consuming part of a Geodesign study, using this script it can be automated. The following evaluation maps are generated: 
 
 * Residential (RES)
 * Commerce (COM)
@@ -18,7 +18,7 @@ At the moment, this is best suited for generating evaluations at local area leve
 
 If you are new to Geodesignhub, please see our course at [Teachable.com](https://geodesignhub.teachable.com/p/geodesign-with-geodesignhub/)  
 
-##Installation
+## Installation
 Use the requirements.txt file to install libraries that are required for the program
 
 ```
