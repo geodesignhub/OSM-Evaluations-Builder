@@ -1,13 +1,13 @@
 settings = {
 
-    # "aoibounds": (10.6972, 59.9095, 10.7297, 59.9268),
-    "aoibounds": (-6.25989,53.3237,-6.25045,53.3285),
+    "aoibounds": (10.6972, 59.9095, 10.7297, 59.9268),
+    # "aoibounds": (-6.25989,53.3237,-6.25045,53.3285),
     #"systems": ["RES", "COM", "PREC", "ATRANS", "PTRANS", ],
     "systems": ["RES", "COM", "PREC", "ATRANS", "PTRANS", "COMFAC", "TOUR"],
     "outputdirectory": "output",
     "workingdirectory": "working",
-    # "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j270361-trimbledata.zip",
-    "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j273259.zip"
+    "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j270361-trimbledata.zip",
+    # "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j273259.zip"
 }
 
 # Mapzen
@@ -42,13 +42,6 @@ processchains = {
                     "type": "polygon",
                     "fields": {
                         "natural": ['water'],
-                    }
-                },
-                
-                "building": {
-                    "type": "polygon",
-                    "fields": {
-                        "building": ['yes'],
                     }
                 }
             }]

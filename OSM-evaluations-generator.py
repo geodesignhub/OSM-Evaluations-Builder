@@ -126,22 +126,29 @@ class EvaluationBuilder():
 						if feature['properties'][curfield] in propertyrules[curfield.lower()]:
 							if filetype == 'point':
 								props = feature['properties']
-								pt = asShape(feature['geometry'])
+								try:
+									pt = asShape(feature['geometry'])
+								except Exception as e: 
+									pass
+								else:
+									if pt.is_valid:
+										poly = pt.buffer(0.0004)
+										bufferedpoly = json.loads(ShapelyHelper.export_to_JSON(poly))
+										feature['geometry'] = bufferedpoly
+										curfeatures.append({'geometry':bufferedpoly})
 
-								poly = pt.buffer(0.0004)
-								bufferedpoly = json.loads(ShapelyHelper.export_to_JSON(poly))
-								feature['geometry'] = bufferedpoly
-								
-								curfeatures.append({'geometry':bufferedpoly})
 							elif filetype == 'lines':
 								props = feature['properties']
-								pt = asShape(feature['geometry'])
-
-								poly = pt.buffer(0.0002)
-								bufferedpoly = json.loads(ShapelyHelper.export_to_JSON(poly))
-								feature['geometry'] = bufferedpoly
-								
-								curfeatures.append({'geometry':bufferedpoly})
+								try:
+									pt = asShape(feature['geometry'])
+								except Exception as e: 
+									pass
+								else: 
+									if pt.is_valid:
+										poly = pt.buffer(0.0002)
+										bufferedpoly = json.loads(ShapelyHelper.export_to_JSON(poly))
+										feature['geometry'] = bufferedpoly
+										curfeatures.append({'geometry':bufferedpoly})
 							else:
 								curfeatures.append(feature)
 				except KeyError as ke:
@@ -161,7 +168,13 @@ class EvaluationBuilder():
 				if curcolorfeature['geometry']['type'] == 'GeometryCollection':
 					pass
 				else:
-					allExistingFeatures.append(asShape(curcolorfeature['geometry']))
+					try:
+						s = asShape(curcolorfeature['geometry'])
+					except Exception as e: 
+						pass
+					else:
+						if s.is_valid:
+							allExistingFeatures.append(s)
 		allExistingFeaturesUnion = unary_union(allExistingFeatures)
 
 		difference = bbox.difference(allExistingFeaturesUnion)
@@ -175,8 +188,13 @@ class EvaluationBuilder():
 			for color, colorFeatures in colorDict.iteritems():
 				allExistingcolorfeatures = []
 				for curcolorfeature in colorFeatures:
-					# print type(curcolorfeature), curcolorfeature.keys()
-					allExistingcolorfeatures.append(asShape(curcolorfeature['geometry']))
+					try:
+						s = asShape(curcolorfeature['geometry'])
+					except Exception as e: 
+						pass
+					else:
+						if s.is_valid:
+							allExistingcolorfeatures.append(s)
 				allExistingcolorfeaturesUnion = unary_union(allExistingcolorfeatures)
 				g = json.loads(ShapelyHelper.export_to_JSON(allExistingcolorfeaturesUnion))
 				tmpf = {'type':'Feature','properties':{'areatype':color}, 'geometry':g }
@@ -275,10 +293,5 @@ if __name__ == '__main__':
 
 	
 	myEvaluationBuilder.cleanDirectories()
-
-
-	# # 	# write evaluation file
-
-
 
 
