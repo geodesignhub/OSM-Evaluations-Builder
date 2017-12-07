@@ -300,6 +300,6 @@ if __name__ == '__main__':
 		myEvaluationBuilder.writeEvaluationFile()
 
 	
-	# myEvaluationBuilder.cleanDirectories()
+	myEvaluationBuilder.cleanDirectories()
 
 
