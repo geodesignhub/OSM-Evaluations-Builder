@@ -1,12 +1,12 @@
 settings = {
 
-    "aoibounds": (10.6972, 59.9095, 10.7297, 59.9268),
+    "aoibounds": ( -118.377,34.0088,-118.347,34.0307),
     # "aoibounds": (-6.25989,53.3237,-6.25045,53.3285),
     #"systems": ["RES", "COM", "PREC", "ATRANS", "PTRANS", ],
-    "systems": ["RES", "COM", "PREC", "ATRANS", "PTRANS", "COMFAC", "TOUR"],
+    "systems": ["RES",],
     "outputdirectory": "output",
     "workingdirectory": "working",
-    "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j270361-trimbledata.zip",
+    "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j276494.zip",
     # "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j273259.zip"
 }
 
@@ -42,8 +42,15 @@ processchains = {
                     "type": "polygon",
                     "fields": {
                         "natural": ['water'],
-                    }
-                }
+                    },
+                },
+                # "building": {
+                #     "type": "polygon",
+                #     "fields": {
+                #         "building": ['yes'],
+
+                #     }
+                # }
             }]
         },
         "green": {
@@ -64,7 +71,7 @@ processchains = {
                 "building": {
                     "type": "polygon",
                     "fields": {
-                        "building": ['commercial'],
+                        "building": ['commercial','yes'],
                     }
                 }
             }, {

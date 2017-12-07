@@ -182,7 +182,6 @@ class EvaluationBuilder():
 
 	def dissolveColors(self):
 		colorDict = self.colorDict
-
 		try:
 			cd = {}
 			for color, colorFeatures in colorDict.iteritems():
@@ -196,9 +195,19 @@ class EvaluationBuilder():
 						if s.is_valid:
 							allExistingcolorfeatures.append(s)
 				allExistingcolorfeaturesUnion = unary_union(allExistingcolorfeatures)
-				g = json.loads(ShapelyHelper.export_to_JSON(allExistingcolorfeaturesUnion))
-				tmpf = {'type':'Feature','properties':{'areatype':color}, 'geometry':g }
-				cd[color] = [tmpf]
+				if allExistingcolorfeaturesUnion.geom_type == 'MultiPolygon':
+					tmpfs = []
+					allExistingColorUnion = [polygon for polygon in allExistingcolorfeaturesUnion]
+					for existingUnionPolygon in allExistingColorUnion:
+						g = json.loads(ShapelyHelper.export_to_JSON(existingUnionPolygon))
+						tmpf = {'type':'Feature','properties':{'areatype':color}, 'geometry':g }
+						tmpfs.append(tmpf)
+					cd[color] = tmpfs
+
+				else:
+					g = json.loads(ShapelyHelper.export_to_JSON(allExistingcolorfeaturesUnion))
+					tmpf = {'type':'Feature','properties':{'areatype':color}, 'geometry':g }
+					cd[color] = [tmpf]
 		except Exception as e: 
 			# if the unary union fails fail gracefully 
 			pass
@@ -217,6 +226,7 @@ class EvaluationBuilder():
 		fc = {"type":"FeatureCollection", "features":[]}
 		for color, colorfeatures in self.colorDict.iteritems():
 			for curcolorfeature in colorfeatures:
+				# print curcolorfeature
 				f = json.loads(ShapelyHelper.export_to_JSON(curcolorfeature))
 				f['properties']={}
 				f['properties']['areatype'] = color.lower()
@@ -285,13 +295,11 @@ if __name__ == '__main__':
 							# print evaluationcolor, rawfile,filemetadata['fields']
 							myEvaluationBuilder.processFile(evaluationcolor,rawfile,filemetadata['fields'])
 
-	# 	# All colors procesed
-	# 	# Create sym difference 
 		myEvaluationBuilder.dissolveColors()
 		myEvaluationBuilder.createSymDifference()
 		myEvaluationBuilder.writeEvaluationFile()
 
 	
-	myEvaluationBuilder.cleanDirectories()
+	# myEvaluationBuilder.cleanDirectories()
 
 
