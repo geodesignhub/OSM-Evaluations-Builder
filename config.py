@@ -10,18 +10,6 @@ settings = {
     # "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j273259.zip"
 }
 
-# Mapzen
-# filekeys = {
-#     "admin": "admin.geojson",
-#     "aeroways": "aeroways.geojson",
-#     "aminities": "aminities.geojson",
-#     "buildings": "buildings.geojson",
-#     "landusages": "landusages.geojson",
-#     "roads": "roads.geojson",
-#     "transportpoints": "transportpoints.geojson",
-#     "waterareas": "waterareas.geojson",
-#     "waterways": "waterways.geojson"##
-# }
 
 processchains = {
     "RES": {
@@ -108,6 +96,13 @@ processchains = {
             }]},
         "green": {
             "files": [{
+                "highway": {
+                    "type": "lines",
+                    "fields": {
+                        "highway": ['tertiary', 'primary',  'secondary'],
+                    }
+                }
+            },{
                 "leisure": {
                     "type": "polygon",
                     "fields": {
@@ -172,7 +167,6 @@ processchains = {
         "green": {
             "files": [{
                 "highway": {
-
                     "type": "lines",
                     "fields": {
                         "highway": ['tertiary', 'primary',  'secondary'],
