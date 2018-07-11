@@ -5,96 +5,73 @@ from shapely.geometry.base import BaseGeometry
 from shapely.geometry import shape, mapping, shape, asShape
 from shapely.geometry import MultiPolygon, MultiPoint, MultiLineString
 from shapely.ops import unary_union
-from urlparse import urlparse
+from urllib.parse import urlparse
 from os.path import splitext, basename
 import zipfile		
 import fiona
+import json
+import geojson
 from fiona.crs import from_epsg
 from shapely.geometry import box
 from shapely.ops import unary_union
 
-class DataDownloader():
-	def downloadFiles(self, urls):
-		for url in urls: 
-			disassembled = urlparse(url)
-			filename = basename(disassembled.path)
-			ext = os.path.splitext(disassembled.path)[1]
-			cwd = os.getcwd()
-			outputdirectory = os.path.join(cwd,config.settings['workingdirectory'])
-			if not os.path.exists(outputdirectory):
-				os.mkdir(outputdirectory)
-			local_filename = os.path.join(outputdirectory, filename)
-			if not os.path.exists(local_filename):
-				print "Downloading from %s..." % url
-				r = requests.get(url, stream=True)
-				with open(local_filename, 'wb') as f:
-				    for chunk in r.iter_content(chunk_size=1024): 
-				        if chunk: # filter out keep-alive new chunks
-				            f.write(chunk)
-				            #f.flush() commented by recommendation from J.F.Sebastian
-			if ext == '.zip':
-				shapefilelist = self.unzipFile(local_filename)
+class DataSplitter():
+	"""
+	This class splits the input file into three files points, lines and polygons. 
 
-		return shapefilelist
+	"""
+	def __init__(self, osmfile):
+		self.points = []
+		self.polygons = []
+		self.lines = []
+		self.osmfile = osmfile
+		self.fctemplate = { "type":"FeatureCollection", "features":[] }
 
+	def splitData(self):
+		# clip the data to the bounds
+		with open(self.osmfile, 'r+') as osmgeojson:
+			allOSMData = json.loads(osmgeojson.read())
 			
-	def unzipFile(self, zippath):
-		# zip_ref = zipfile.ZipFile(zippath, 'r')
-		print "Unzipping archive.. %s" % zippath
-		cwd = os.getcwd()
-		outputdirectory = os.path.join(cwd,config.settings['workingdirectory'])
-		shapefilelist = []
-		fh = open(zippath, 'rb')
-		z = zipfile.ZipFile(fh)
-		for name in z.namelist():
-			basename= os.path.basename(name)
-			filename, file_extension = os.path.splitext(basename)
-			if file_extension == '.shp' and 'MACOSX' not in name:
+		featLookup = {'Point': self.points, 'MultiPoint':self.points,'LineString':self.lines, 'MultiLineString':self.lines, 'Polygon':self.polygons, 'MultiPolygon':self.polygons }
 
-				clipkey = filename.split('_')[0]
-
-				if 'polygon' in filename:
-					filetype = 'polygon'
-				elif 'line' in filename:
-					filetype = 'lines'
-				elif 'point' in filename:
-					filetype = 'point'
-				else: 
-					filetype = 'polygon'
-				shapefilelist.append({'filekey':clipkey.lower(),'clipkey': '','type':filetype,'location':name})
-			z.extract(name, outputdirectory)
-		fh.close()
-
-		return shapefilelist
-
-
-class AOIClipper():
-	''' A class clip source data to AOI'''
-	def clipFile(self, aoibbox, osmfile, clipkey, filetype):
-		# print aoibbox, osmfile, clipkey
-		# schema of the new shapefile
-		
-		# creation of the new shapefile with the intersection
-
-		opshp = clipkey+'_'+filetype+'.shp'
-		cwd = os.getcwd()
-		clippeddirectory = os.path.join(cwd,config.settings['workingdirectory'], 'clipped')
-		if not os.path.exists(clippeddirectory):
-			os.mkdir(clippeddirectory)
-
-		outputdirectory = os.path.join(cwd,config.settings['workingdirectory'])
-		opfile = os.path.join(clippeddirectory, opshp)
-
-		osmfile = os.path.join(outputdirectory, osmfile)
+		for curData in allOSMData['features']:
+			featLookup[curData['geometry']['type']].append(curData)
 	
-		with fiona.open(osmfile) as source:
-			schema = source.schema
-			with fiona.open(opfile, 'w',crs=from_epsg(4326), driver='ESRI Shapefile', schema=schema) as sink:
-				# Process only the records intersecting a box.
-				for f in source.filter(bbox=aoibbox):  
-					prop = f['properties']
-					
-					sink.write({'geometry':mapping(shape(f['geometry'])),'properties': prop})
+
+	def writeFiles(self):
+		workingdirpath = os.path.join(os.getcwd(), config.settings['workingdirectory'])
+		if not os.path.exists(workingdirpath):
+			os.mkdir(workingdirpath)
+
+		if self.points:
+			pointfilename = os.path.join(workingdirpath ,  "points.geojson")
+			fc = self.fctemplate
+			fc['features'] = self.points
+			with open(pointfilename, 'w') as pointfile:
+				pointfile.write(json.dumps(fc))
+
+	
+		if self.polygons:
+			
+			polygonfilename = os.path.join(workingdirpath , "polygons.geojson")
+			fc = self.fctemplate
+			fc['features'] = self.polygons
+			with open(polygonfilename, 'w') as polygonfile:
+				polygonfile.write(json.dumps(fc))
+
+	
+		if self.lines:
+			print("h33")
+			linefilename = os.path.join(workingdirpath , "lines.geojson")
+			fc = self.fctemplate
+			fc['features'] = self.lines
+			with open(linefilename, 'w') as linefile:
+				linefile.write(json.dumps(fc))
+
+	
+	def clipFile(self):
+		# OSM file will always be clipped no need for this method
+		pass
 
 
 class EvaluationBuilder():
@@ -263,43 +240,46 @@ class EvaluationBuilder():
 
 if __name__ == '__main__':
 	
-	osmdataurl = config.settings['osmdata']
+	osmdataloc = config.settings['osmdata']
 	systems = config.settings['systems']
+	myDataSplitter = DataSplitter(osmdataloc)
+	myDataSplitter.splitData()
+	myDataSplitter.writeFiles()
 
-	myFileDownloader = DataDownloader()
-	shapefilelist = myFileDownloader.downloadFiles([osmdataurl])
+	# myFileDownloader = DataDownloader()
+	# shapefilelist = myFileDownloader.downloadFiles([osmdataurl])
 
 
-	myClipper = AOIClipper()
-	for curshapefiledict in shapefilelist:	
+	# myClipper = AOIClipper()
+	# for curshapefiledict in shapefilelist:	
 
-		myClipper.clipFile(config.settings['aoibounds'], curshapefiledict['location'], curshapefiledict['filekey'], curshapefiledict['type'])
+	# 	myClipper.clipFile(config.settings['aoibounds'], curshapefiledict['location'], curshapefiledict['filekey'], curshapefiledict['type'])
 
-	# for system, processchain in config.processchains.iteritems():
-	for system in systems: 
-		processchain = config.processchains[system]
-		print "Processing %s .." % system
-		myEvaluationBuilder = EvaluationBuilder(system)
-		for evaluationcolor, f in processchain.iteritems():
-			try:
-				allfiles = f['files']
-			except KeyError as ke:
-				# no property speficied 
-				pass
-			else:
-				for curfile in allfiles:
-					for filekey, filemetadata in curfile.iteritems():
-						rawfiledetails = [d for d in shapefilelist if d['filekey'] == filekey.lower() and d['type']== filemetadata['type']]
+	# # for system, processchain in config.processchains.iteritems():
+	# for system in systems: 
+	# 	processchain = config.processchains[system]
+	# 	print "Processing %s .." % system
+	# 	myEvaluationBuilder = EvaluationBuilder(system)
+	# 	for evaluationcolor, f in processchain.iteritems():
+	# 		try:
+	# 			allfiles = f['files']
+	# 		except KeyError as ke:
+	# 			# no property speficied 
+	# 			pass
+	# 		else:
+	# 			for curfile in allfiles:
+	# 				for filekey, filemetadata in curfile.iteritems():
+	# 					rawfiledetails = [d for d in shapefilelist if d['filekey'] == filekey.lower() and d['type']== filemetadata['type']]
 						
-						for rawfile in rawfiledetails:
-							# print evaluationcolor, rawfile,filemetadata['fields']
-							myEvaluationBuilder.processFile(evaluationcolor,rawfile,filemetadata['fields'])
+	# 					for rawfile in rawfiledetails:
+	# 						# print evaluationcolor, rawfile,filemetadata['fields']
+	# 						myEvaluationBuilder.processFile(evaluationcolor,rawfile,filemetadata['fields'])
 
-		myEvaluationBuilder.dissolveColors()
-		myEvaluationBuilder.createSymDifference()
-		myEvaluationBuilder.writeEvaluationFile()
+	# 	myEvaluationBuilder.dissolveColors()
+	# 	myEvaluationBuilder.createSymDifference()
+	# 	myEvaluationBuilder.writeEvaluationFile()
 
 	
-	myEvaluationBuilder.cleanDirectories()
+	# myEvaluationBuilder.cleanDirectories()
 
 

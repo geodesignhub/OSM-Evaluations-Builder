@@ -1,12 +1,12 @@
 settings = {
 
     "aoibounds": ( -118.377,34.0088,-118.347,34.0307),
-    # "aoibounds": (-6.25989,53.3237,-6.25045,53.3285),
+    
     #"systems": ["RES", "COM", "PREC", "ATRANS", "PTRANS", ],
     "systems": ["RES",],
     "outputdirectory": "output",
     "workingdirectory": "working",
-    "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j276494.zip",
+    "osmdata": "/Users/hrishiballal/Desktop/mamo.geojson",
     # "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j273259.zip"
 }
 
