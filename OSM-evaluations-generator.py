@@ -163,18 +163,21 @@ class EvaluationBuilder():
 
 
 	def createSymDifference(self, aoifile):
-		# prjbbox = config.settings['aoibounds']
-		print(aoifile)
+
 		allFeatures = []
 		with fiona.open(aoifile) as src: 
 			for f in src: 
 				try:
-					allFeatures.append(asShape(f['geometry']))
+					s1 = asShape(f['geometry'])
 				except Exception as e:
-					print(f.is_valid)
-					
-		allExistingFeatures = []
+					pass
+				else: 
+					if s1.is_valid:
+						allFeatures.append(s1)
+
 		af = unary_union(allFeatures)
+
+		allExistingFeatures = []
 		for color, colorfeatures in self.colorDict.items():
 			for curcolorfeature in colorfeatures:
 				if curcolorfeature['geometry']['type'] == 'GeometryCollection':
