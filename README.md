@@ -22,21 +22,29 @@ If you are new to Geodesignhub, please see our course at [Teachable.com](https:/
 Use the requirements.txt file to install libraries that are required for the program
 
 ```
-pip install requirements.txt
+pip install -r requirements.txt
+
 ```
 
 ## 3-Step process
+**General Flow**
+
+
 **1. Download raw data**
 
-1. Go to [https://market.trimbledata.com](https://market.trimbledata.com) to order and download OSM data for your area of interest.
- - Search for the area of your interst in the interface (top left)
- - Create a polygon and select OSM data (free) in the right hand side
- - Once the order is ready they will email you with a link to a zip file
-2. Once the zip file is mailed to you will need to upload it to a publically accessible URL. e.g. 
+1. Open QGIS and load your boundary polygon
+2. Go to the "Vector" menu and download OSM file for your study area. A data.osm file will be saved to the directory that you specify. 
+
+![Vector Menu](https://i.imgur.com/OfbhjPA.png)
+![Download Data](https://i.imgur.com/xjotQDg.png)
+
+
+3. Download and install [OSMtoGeoJSON](https://github.com/tyrasd/osmtogeojson)
+4. Convert your .osm file to a .geojson file, you are now ready to process this geojson file. 
 
 **2. Update config.py**
 
-1. In config.py set the URL of the Trimble data zip file
+1. In config.py set path of the converted GeoJSON file. 
 2. Set the aoibounds parameter to set the bounding box co-ordinates in `(southwest_lng,southwest_lat,northeast_lng,northeast_lat)` format. 
 
 **3. Upload Evaluations**
