@@ -1,13 +1,11 @@
 settings = {
 
-    "aoibounds": ( -118.377,34.0088,-118.347,34.0307),
-    
-    #"systems": ["RES", "COM", "PREC", "ATRANS", "PTRANS", ],
-    "systems": ["RES",],
+    "aoibounds": (-67.0853,10.5757,-66.9687,10.615),
+    "systems": ["RES", "COM", "PREC", "ATRANS", "PTRANS", ],
+    # "systems": ["RES",],
     "outputdirectory": "output",
     "workingdirectory": "working",
     "osmdata": "/Users/hrishiballal/Desktop/mamo.geojson",
-    # "osmdata": "https://gdh-data-sandbox.ams3.digitaloceanspaces.com/weogeo_j273259.zip"
 }
 
 
@@ -15,8 +13,7 @@ processchains = {
     "RES": {
         "red": {
             "files": [{
-                "building": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "building": ['apartments', 'bungalow', 'bunglow', 'cabin', 'commercial;residential', 'house', 'residential', 'semi', 'semidetached_house'],
 
@@ -26,8 +23,7 @@ processchains = {
         },
         "yellow": {
             "files": [{
-                "natural": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "natural": ['water'],
                     },
@@ -43,8 +39,7 @@ processchains = {
         },
         "green": {
             "files": [{
-                "leisure": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "leisure": ['common', 'fitness_centre', 'garden', 'golf_course', 'marina', 'nature_reserve', 'park', 'picnic_table', 'pitch', 'playground', 'recreation_ground', 'slipway', 'sports_centre', 'stadium', 'swimming_pool', 'track'],
 
@@ -56,22 +51,19 @@ processchains = {
     "COM": {
         "red": {
             "files": [{
-                "building": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "building": ['commercial','yes'],
                     }
                 }
             }, {
-                "amenity": {
-                    "type": "point",
+                "points": {
                     "fields": {
                         "amenity": ['atm', 'bank', 'bar', 'bus_station', 'cafe', 'car_rental', 'car_wash', 'charging_station', 'childcare', 'cinema', 'clinic', 'dentist', 'doctors', 'marketplace', 'nightclub', 'pub', 'recycling', 'restaurant', 'theatre'],
                     }
                 }
             }, {
-                "shop": {
-                    "type": "point",
+                "points": {
                     "fields": {
                         "amenity": ['alcohol', 'bakery', 'beauty', 'beverages', 'bicycle', 'books', 'boutique', 'butcher', 'car', 'car_parts', 'car_repair', 'chemist', 'clothes', 'computer', 'confectionery', 'convenience', 'copyshop', 'cosmetics', 'deli', 'department_store', 'doityourself', 'dry_cleaning', 'electronics', 'florist', 'funeral_directors', 'furniture', 'garden_centre', 'gift', 'greengrocer', 'hairdresser', 'hardware', 'jewelry', 'kiosk', 'laundry', 'mall', 'mobile_phone', 'motorcycle', 'newsagent', 'optician', 'pet', 'shoes', 'sports', 'stationery', 'supermarket', 'toys', 'travel_agency', 'tyres', 'vacant', 'variety_store', 'yes', ],
                     }
@@ -80,15 +72,13 @@ processchains = {
         },
         "yellow": {
             "files": [{
-                "building": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "building": ['apartments', 'bungalow', 'bunglow', 'cabin', 'commercial;residential', 'house', 'residential', 'semi', 'semidetached_house'],
                     }
                 }
             }, {
-                "natural": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "natural": ['water'],
                     }
@@ -96,15 +86,13 @@ processchains = {
             }]},
         "green": {
             "files": [{
-                "highway": {
-                    "type": "lines",
+                "lines": {
                     "fields": {
                         "highway": ['tertiary', 'primary',  'secondary'],
                     }
                 }
             },{
-                "leisure": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "leisure": ['common', 'fitness_centre', 'garden', 'golf_course', 'marina', 'nature_reserve', 'park', 'picnic_table', 'pitch', 'playground', 'recreation_ground', 'slipway', 'sports_centre', 'stadium', 'swimming_pool', 'track'],
                     }
@@ -115,8 +103,7 @@ processchains = {
     "PREC": {
         "red": {
             "files": [{
-                "leisure": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "leisure": ['common', 'fitness_centre', 'garden', 'golf_course', 'marina', 'nature_reserve', 'park', 'picnic_table', 'pitch', 'playground', 'recreation_ground', 'slipway', 'sports_centre', 'stadium', 'swimming_pool', 'track', 'swimming_pool', ],
                     }
@@ -125,15 +112,13 @@ processchains = {
         },
         "yellow": {
             "files": [{
-                "building": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "building": ['apartments', 'bungalow', 'bunglow', 'cabin', 'commercial;residential', 'house', 'residential', 'semi', 'semidetached_house'],
                     }
                 }
             }, {
-                "natural": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "natural": ['water'],
                     }
@@ -141,9 +126,7 @@ processchains = {
             }]},
         "green": {
             "files": [{
-                "amenity": {
-
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "amenity": ['community_centre', 'library', 'post_office', 'public_building', 'social_facility', 'theatre'],
                     }
@@ -154,8 +137,7 @@ processchains = {
     "ATRANS": {
         "red": {
             "files": [{
-                "highway": {
-                    "type": "lines",
+                "lines": {
                     "fields": {
                         "highway": ['cycleway', 'footway', 'pedestrian', ],
                     }
@@ -166,8 +148,7 @@ processchains = {
         "yellow": {},
         "green": {
             "files": [{
-                "highway": {
-                    "type": "lines",
+                "lines": {
                     "fields": {
                         "highway": ['tertiary', 'primary',  'secondary'],
                     }
@@ -178,8 +159,7 @@ processchains = {
     "PTRANS": {
         "red": {
             "files": [{
-                "route": {
-                    "type": "point",
+                "points": {
                     "fields": {
                         "role": ['stop'],
                     }
@@ -189,8 +169,7 @@ processchains = {
         "yellow": {},
         "green": {
             "files": [{
-                "highway": {
-                    "type": "lines",
+                "lines": {
                     "fields": {
                         "highway": ['primary',  'secondary', 'tertiary'],
                     }
@@ -201,8 +180,7 @@ processchains = {
     "COMFAC": {
         "red": {
             "files": [{
-                "leisure": {
-                    "type": "polygon",
+                "polygons": {
                     "fields": {
                         "leisure": ['common', 'fitness_centre', 'garden', 'golf_course', 'marina', 'nature_reserve', 'park', 'picnic_table', 'pitch', 'playground', 'recreation_ground', 'slipway', 'sports_centre', 'stadium', 'swimming_pool', 'track'],
 
@@ -213,8 +191,7 @@ processchains = {
         "yellow": {},
         "green": {
             "files": [{
-                "landuse": {
-                    "type": "polygons",
+                "polygons": {
                     "fields": {
                         "landuse": [ 'allotments','brownfield','farm','farmland','farmyard','forest','grass','greenfield','greenhouse_horticulture','meadow','military','orchard','plant_nursery','recreation_ground','village_green'],
                     }
@@ -225,8 +202,7 @@ processchains = {
     "TOUR": {
         "red": {
             "files": [{
-                "tourism": {
-                    "type": "point",
+                "points": {
                     "fields": {
                         "tourism": [ 'alpine_hut','artwork','attraction','camp_site','caravan_site','chalet','guest_house','hostel','hotel','information','motel','museum','picnic_site','viewpoint'],
                     }
@@ -236,8 +212,7 @@ processchains = {
         "yellow": {},
         "green": {
             "files": [{
-                "historic": {
-                    "type": "point",
+                "points": {
                     "fields": {
                         "historic": [ 'yes','archaeological_site','building','castle','memorial','monument','ruins','tomb'],
                     }

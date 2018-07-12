@@ -7,7 +7,6 @@ from shapely.geometry import MultiPolygon, MultiPoint, MultiLineString
 from shapely.ops import unary_union
 from urllib.parse import urlparse
 from os.path import splitext, basename
-import zipfile		
 import fiona
 import json
 import geojson
@@ -39,12 +38,14 @@ class DataSplitter():
 	
 
 	def writeFiles(self):
+		allfiles = []
 		workingdirpath = os.path.join(os.getcwd(), config.settings['workingdirectory'])
 		if not os.path.exists(workingdirpath):
 			os.mkdir(workingdirpath)
 
 		if self.points:
 			pointfilename = os.path.join(workingdirpath ,  "points.geojson")
+			allfiles.append({'location':pointfilename, 'type':'points'})
 			fc = self.fctemplate
 			fc['features'] = self.points
 			with open(pointfilename, 'w') as pointfile:
@@ -54,6 +55,7 @@ class DataSplitter():
 		if self.polygons:
 			
 			polygonfilename = os.path.join(workingdirpath , "polygons.geojson")
+			allfiles.append({'location':polygonfilename, 'type':'polygons'})
 			fc = self.fctemplate
 			fc['features'] = self.polygons
 			with open(polygonfilename, 'w') as polygonfile:
@@ -61,12 +63,14 @@ class DataSplitter():
 
 	
 		if self.lines:
-			print("h33")
 			linefilename = os.path.join(workingdirpath , "lines.geojson")
+			allfiles.append({'location':linefilename, 'type':'lines'})
 			fc = self.fctemplate
 			fc['features'] = self.lines
 			with open(linefilename, 'w') as linefile:
 				linefile.write(json.dumps(fc))
+
+		return allfiles
 
 	
 	def clipFile(self):
@@ -86,22 +90,19 @@ class EvaluationBuilder():
 
 	def processFile(self, color, rawfiledetails, propertyrules):
 		curfeatures = self.colorDict[color]
-		cwd = os.getcwd()
-		tmpk = []
-		for k, v in propertyrules.iteritems():
-			tmpk.append(k.upper())
-		allfields = tmpk
-		filekey = rawfiledetails['filekey']
-		filetype = rawfiledetails['type']
 
-		rawfilepath = os.path.join(cwd,config.settings['workingdirectory'], 'clipped', filekey+'_'+filetype+'.shp')
-		
-		with fiona.open(rawfilepath) as source:
+		allfields = []
+		curfeatures = []
+		for k, v in propertyrules.items():
+			allfields.append(k.lower())
+
+		with fiona.open(rawfiledetails['location']) as source:
 			for feature in source: 
 				try: 
 					for curfield in allfields:
+						
 						if feature['properties'][curfield] in propertyrules[curfield.lower()]:
-							if filetype == 'point':
+							if rawfiledetails['type'] == 'points':
 								props = feature['properties']
 								try:
 									pt = asShape(feature['geometry'])
@@ -114,7 +115,7 @@ class EvaluationBuilder():
 										feature['geometry'] = bufferedpoly
 										curfeatures.append({'geometry':bufferedpoly})
 
-							elif filetype == 'lines':
+							elif rawfiledetails['type'] == 'lines':
 								props = feature['properties']
 								try:
 									pt = asShape(feature['geometry'])
@@ -130,6 +131,7 @@ class EvaluationBuilder():
 								curfeatures.append(feature)
 				except KeyError as ke:
 					pass
+					
 		self.colorDict[color] = curfeatures
 
 
@@ -140,7 +142,7 @@ class EvaluationBuilder():
 		bbox= box(prjbbox[0],prjbbox[1], prjbbox[2], prjbbox[3])
 		allExistingFeatures = []
 
-		for color, colorfeatures in self.colorDict.iteritems():
+		for color, colorfeatures in self.colorDict.items():
 			for curcolorfeature in colorfeatures:
 				if curcolorfeature['geometry']['type'] == 'GeometryCollection':
 					pass
@@ -161,7 +163,7 @@ class EvaluationBuilder():
 		colorDict = self.colorDict
 		try:
 			cd = {}
-			for color, colorFeatures in colorDict.iteritems():
+			for color, colorFeatures in colorDict.items():
 				allExistingcolorfeatures = []
 				for curcolorfeature in colorFeatures:
 					try:
@@ -191,8 +193,6 @@ class EvaluationBuilder():
 		else:
 			self.colorDict = cd
 
-		
-
 	def writeEvaluationFile(self):
 		opgeojson = self.systemname + '.geojson'
 		cwd = os.getcwd()
@@ -201,7 +201,7 @@ class EvaluationBuilder():
 			os.mkdir(outputdirectory)
 		opfile = os.path.join(outputdirectory, opgeojson)
 		fc = {"type":"FeatureCollection", "features":[]}
-		for color, colorfeatures in self.colorDict.iteritems():
+		for color, colorfeatures in self.colorDict.items():
 			for curcolorfeature in colorfeatures:
 				# print curcolorfeature
 				f = json.loads(ShapelyHelper.export_to_JSON(curcolorfeature))
@@ -244,40 +244,30 @@ if __name__ == '__main__':
 	systems = config.settings['systems']
 	myDataSplitter = DataSplitter(osmdataloc)
 	myDataSplitter.splitData()
-	myDataSplitter.writeFiles()
-
-	# myFileDownloader = DataDownloader()
-	# shapefilelist = myFileDownloader.downloadFiles([osmdataurl])
+	filelist = myDataSplitter.writeFiles()
 
 
-	# myClipper = AOIClipper()
-	# for curshapefiledict in shapefilelist:	
-
-	# 	myClipper.clipFile(config.settings['aoibounds'], curshapefiledict['location'], curshapefiledict['filekey'], curshapefiledict['type'])
-
-	# # for system, processchain in config.processchains.iteritems():
-	# for system in systems: 
-	# 	processchain = config.processchains[system]
-	# 	print "Processing %s .." % system
-	# 	myEvaluationBuilder = EvaluationBuilder(system)
-	# 	for evaluationcolor, f in processchain.iteritems():
-	# 		try:
-	# 			allfiles = f['files']
-	# 		except KeyError as ke:
-	# 			# no property speficied 
-	# 			pass
-	# 		else:
-	# 			for curfile in allfiles:
-	# 				for filekey, filemetadata in curfile.iteritems():
-	# 					rawfiledetails = [d for d in shapefilelist if d['filekey'] == filekey.lower() and d['type']== filemetadata['type']]
+	for system in systems: 
+		processchain = config.processchains[system]
+		print("Processing %s .." % system)
+		myEvaluationBuilder = EvaluationBuilder(system)
+		for evaluationcolor, f in processchain.items():
+			try:
+				allfiles = f['files']
+			except KeyError as ke:
+				# no property speficied 
+				pass
+			else:
+				for curfile in allfiles:
+					for filekey, filemetadata in curfile.items():
+						rawfiledetails = [d for d in filelist if os.path.basename(d['location']).split('.')[0] == filekey.lower()]
 						
-	# 					for rawfile in rawfiledetails:
-	# 						# print evaluationcolor, rawfile,filemetadata['fields']
-	# 						myEvaluationBuilder.processFile(evaluationcolor,rawfile,filemetadata['fields'])
+						for rawfile in rawfiledetails:
+							myEvaluationBuilder.processFile(evaluationcolor,rawfile,filemetadata['fields'])	
 
-	# 	myEvaluationBuilder.dissolveColors()
-	# 	myEvaluationBuilder.createSymDifference()
-	# 	myEvaluationBuilder.writeEvaluationFile()
+		myEvaluationBuilder.dissolveColors()
+		myEvaluationBuilder.createSymDifference()
+		myEvaluationBuilder.writeEvaluationFile()
 
 	
 	# myEvaluationBuilder.cleanDirectories()
