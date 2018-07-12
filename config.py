@@ -1,8 +1,8 @@
 settings = {
 
-    "aoibounds": (-67.0853,10.5757,-66.9687,10.615),
-    "systems": ["RES", "COM", "PREC", "ATRANS", "PTRANS", ],
-    # "systems": ["RES",],
+    "aoifile": "https://gdh-data.ams3.digitaloceanspaces.com/boun.geojson",
+    # "systems": ["RES", "COM", "PREC", "ATRANS", "PTRANS", ],
+    "systems": ["RES",],
     "outputdirectory": "output",
     "workingdirectory": "working",
     "osmdata": "/Users/hrishiballal/Desktop/mamo.geojson",

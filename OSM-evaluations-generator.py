@@ -14,6 +14,31 @@ from fiona.crs import from_epsg
 from shapely.geometry import box
 from shapely.ops import unary_union
 
+
+class DataDownloader():
+	def downloadAOIFile(self, urls):
+		for url in urls: 
+			disassembled = urlparse(url)
+			filename = basename(disassembled.path)
+			ext = os.path.splitext(disassembled.path)[1]
+			cwd = os.getcwd()
+			outputdirectory = os.path.join(cwd,config.settings['workingdirectory'])
+			if not os.path.exists(outputdirectory):
+				os.mkdir(outputdirectory)
+			local_filename = os.path.join(outputdirectory, filename)
+			if not os.path.exists(local_filename):
+				print("Downloading from %s..." % url)
+				r = requests.get(url, stream=True)
+				
+				with open(local_filename, 'wb') as f:
+				    for chunk in r.iter_content(chunk_size=1024): 
+				        if chunk: # filter out keep-alive new chunks
+				            f.write(chunk)
+							
+
+		return local_filename
+
+			
 class DataSplitter():
 	"""
 	This class splits the input file into three files points, lines and polygons. 
@@ -137,11 +162,19 @@ class EvaluationBuilder():
 
 
 
-	def createSymDifference(self):
-		prjbbox = config.settings['aoibounds']
-		bbox= box(prjbbox[0],prjbbox[1], prjbbox[2], prjbbox[3])
+	def createSymDifference(self, aoifile):
+		# prjbbox = config.settings['aoibounds']
+		print(aoifile)
+		allFeatures = []
+		with fiona.open(aoifile) as src: 
+			for f in src: 
+				try:
+					allFeatures.append(asShape(f['geometry']))
+				except Exception as e:
+					print(f.is_valid)
+					
 		allExistingFeatures = []
-
+		af = unary_union(allFeatures)
 		for color, colorfeatures in self.colorDict.items():
 			for curcolorfeature in colorfeatures:
 				if curcolorfeature['geometry']['type'] == 'GeometryCollection':
@@ -156,7 +189,7 @@ class EvaluationBuilder():
 							allExistingFeatures.append(s)
 		allExistingFeaturesUnion = unary_union(allExistingFeatures)
 
-		difference = bbox.difference(allExistingFeaturesUnion)
+		difference = af.difference(allExistingFeaturesUnion)
 		self.symdifference = difference
 
 	def dissolveColors(self):
@@ -242,6 +275,11 @@ if __name__ == '__main__':
 	
 	osmdataloc = config.settings['osmdata']
 	systems = config.settings['systems']
+	aoifile = config.settings['aoifile']
+
+	myFileDownloader = DataDownloader()
+	aoifile = myFileDownloader.downloadAOIFile([aoifile])
+
 	myDataSplitter = DataSplitter(osmdataloc)
 	myDataSplitter.splitData()
 	filelist = myDataSplitter.writeFiles()
@@ -266,7 +304,7 @@ if __name__ == '__main__':
 							myEvaluationBuilder.processFile(evaluationcolor,rawfile,filemetadata['fields'])	
 
 		myEvaluationBuilder.dissolveColors()
-		myEvaluationBuilder.createSymDifference()
+		myEvaluationBuilder.createSymDifference(aoifile)
 		myEvaluationBuilder.writeEvaluationFile()
 
 	
