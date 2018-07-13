@@ -127,10 +127,12 @@ class EvaluationBuilder():
 					for curfield in allfields:
 						
 						if feature['properties'][curfield] in propertyrules[curfield.lower()]:
+							
 							if rawfiledetails['type'] == 'points':
 								props = feature['properties']
 								try:
 									pt = asShape(feature['geometry'])
+									poly = pt.buffer(0.0004)
 								except Exception as e: 
 									pass
 								else:
@@ -144,6 +146,7 @@ class EvaluationBuilder():
 								props = feature['properties']
 								try:
 									pt = asShape(feature['geometry'])
+									pt.is_valid
 								except Exception as e: 
 									pass
 								else: 
@@ -153,17 +156,29 @@ class EvaluationBuilder():
 										feature['geometry'] = bufferedpoly
 										curfeatures.append({'geometry':bufferedpoly})
 							else:
-								curfeatures.append(feature)
+								props = feature['properties']
+								try:
+									poly = asShape(feature['geometry'])
+									poly.is_valid
+								except Exception as e: 
+									pass
+								else: 
+									if poly.is_valid:
+										try: 
+											poly = poly.buffer(0.0004)
+										except Exception as e:
+											pass
+										else:
+											bufferedpoly = json.loads(ShapelyHelper.export_to_JSON(poly))
+											feature['geometry'] = bufferedpoly
+											curfeatures.append({'geometry':bufferedpoly})
+
 				except KeyError as ke:
 					pass
 					
 		self.colorDict[color] = curfeatures
 
-
-
-
 	def createSymDifference(self, aoifile):
-
 		allFeatures = []
 		with fiona.open(aoifile) as src: 
 			for f in src: 
