@@ -298,6 +298,9 @@ if __name__ == '__main__':
 	myFileDownloader = DataDownloader()
 	aoifile = myFileDownloader.downloadAOIFile([aoifile])
 
+	cwd = os.getcwd()
+	osmdataloc = os.path.join(cwd, config.settings['workingdirectory'], osmdataloc)
+	
 	myDataSplitter = DataSplitter(osmdataloc)
 	myDataSplitter.splitData()
 	filelist = myDataSplitter.writeFiles()
