@@ -16,6 +16,7 @@ processchains = {
                 "polygons": {
                     "fields": {
                         "building": ['apartments', 'bungalow', 'bunglow', 'cabin', 'commercial;residential', 'house', 'residential', 'semi', 'semidetached_house'],
+                        
 
                     }
                 }
@@ -26,15 +27,9 @@ processchains = {
                 "polygons": {
                     "fields": {
                         "natural": ['water'],
+                        # "building": ['yes'],
                     },
                 },
-                # "building": {
-                #     "type": "polygon",
-                #     "fields": {
-                #         "building": ['yes'],
-
-                #     }
-                # }
             }]
         },
         "green": {
@@ -115,6 +110,7 @@ processchains = {
                 "polygons": {
                     "fields": {
                         "building": ['apartments', 'bungalow', 'bunglow', 'cabin', 'commercial;residential', 'house', 'residential', 'semi', 'semidetached_house'],
+                        "building": ['yes'],
                     }
                 }
             }, {
