@@ -53,7 +53,7 @@ class DataSplitter():
 
 	def splitData(self):
 		# clip the data to the bounds
-		with open(self.osmfile, 'r+') as osmgeojson:
+		with open(self.osmfile, 'r+',encoding="utf8") as osmgeojson:
 			allOSMData = json.loads(osmgeojson.read())
 			
 		featLookup = {'Point': self.points, 'MultiPoint':self.points,'LineString':self.lines, 'MultiLineString':self.lines, 'Polygon':self.polygons, 'MultiPolygon':self.polygons }
@@ -113,50 +113,53 @@ class EvaluationBuilder():
 		self.symdifference = 0
 		self.colorDict = {'red':self.redFeatures, 'yellow':self.yellowFeatures, 'green':self.greenFeatures}
 
+	def getColorCount(self):		
+		print("File has {} red, {} yellow, and {} green features.".format(len(self.colorDict['red']),len(self.colorDict['yellow']),len(self.colorDict['green']),))
+
 	def processFile(self, color, rawfiledetails, propertyrules):
 		curfeatures = self.colorDict[color]
 
 		allfields = []
-		curfeatures = []
+		
 		for k, v in propertyrules.items():
 			allfields.append(k.lower())
 
 		with fiona.open(rawfiledetails['location']) as source:
-			for feature in source: 
+			for curfield in allfields:			
 				try: 
-					for curfield in allfields:
+					for feature in source:
 						
 						if feature['properties'][curfield] in propertyrules[curfield.lower()]:
 							
 							if rawfiledetails['type'] == 'points':
-								props = feature['properties']
+								# props = feature['properties']
 								try:
 									pt = asShape(feature['geometry'])
-									poly = pt.buffer(0.0004)
+									# pt.is_valid
 								except Exception as e: 
 									pass
 								else:
 									if pt.is_valid:
-										poly = pt.buffer(0.0004)
+										poly = pt.buffer(0.00005)
 										bufferedpoly = json.loads(ShapelyHelper.export_to_JSON(poly))
 										feature['geometry'] = bufferedpoly
 										curfeatures.append({'geometry':bufferedpoly})
 
 							elif rawfiledetails['type'] == 'lines':
-								props = feature['properties']
+								# props = feature['properties']
 								try:
-									pt = asShape(feature['geometry'])
-									pt.is_valid
+									ln = asShape(feature['geometry'])
+									# ln.is_valid
 								except Exception as e: 
 									pass
 								else: 
-									if pt.is_valid:
-										poly = pt.buffer(0.0002)
+									if ln.is_valid:
+										poly = ln.buffer(0.00005)
 										bufferedpoly = json.loads(ShapelyHelper.export_to_JSON(poly))
 										feature['geometry'] = bufferedpoly
 										curfeatures.append({'geometry':bufferedpoly})
 							else:
-								props = feature['properties']
+								# props = feature['properties']
 								try:
 									poly = asShape(feature['geometry'])
 									poly.is_valid
@@ -165,7 +168,7 @@ class EvaluationBuilder():
 								else: 
 									if poly.is_valid:
 										try: 
-											poly = poly.buffer(0.0004)
+											poly = poly.buffer(0.00005)
 										except Exception as e:
 											pass
 										else:
@@ -286,7 +289,7 @@ class EvaluationBuilder():
 			        if os.path.isfile(file_path):
 			            os.unlink(file_path)
 			        elif os.path.isdir(file_path): shutil.rmtree(file_path)
-			    except Exception as e:
+			    except Exception as de:
 			        pass
 
 if __name__ == '__main__':
@@ -310,6 +313,7 @@ if __name__ == '__main__':
 		processchain = config.processchains[system]
 		print("Processing %s .." % system)
 		myEvaluationBuilder = EvaluationBuilder(system)
+
 		for evaluationcolor, f in processchain.items():
 			try:
 				allfiles = f['files']
@@ -317,12 +321,15 @@ if __name__ == '__main__':
 				# no property speficied 
 				pass
 			else:
+				
 				for curfile in allfiles:
+					
 					for filekey, filemetadata in curfile.items():
-						rawfiledetails = [d for d in filelist if os.path.basename(d['location']).split('.')[0] == filekey.lower()]
+						rawfiledetails = [d for d in filelist if os.path.basename(d['location']).split('.')[0] == filekey.lower()]					
 						
 						for rawfile in rawfiledetails:
 							myEvaluationBuilder.processFile(evaluationcolor,rawfile,filemetadata['fields'])	
+					# myEvaluationBuilder.getColorCount()
 
 		myEvaluationBuilder.dissolveColors()
 		myEvaluationBuilder.createSymDifference(aoifile)
